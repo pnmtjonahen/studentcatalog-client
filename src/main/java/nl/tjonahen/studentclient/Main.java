@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -56,23 +57,67 @@ public class Main {
                 if (i != 0) {
                     bs.append(",");
                 }
-                bs.append(String.format("{\"title\":\"%s\", \"surname\":\"%s\", \"name\":\"%s\", \"nationality\":\"%s\", \"academicBackground\":\"%s\" }",
+                final String surname = students.get((int) (Math.random() * (upper - lower)) + lower).getField1();
+                final String name = students.get((int) (Math.random() * (upper - lower)) + lower).getField2();
+                
+                final String email = createEmail(surname, name, students.get((int) (Math.random() * (upper - lower))));
+                final String phonenumber = createPhoneNumber(students.get((int) (Math.random() * (upper - lower))));
+                
+                bs.append(String.format("{\"title\":\"%s\", \"surname\":\"%s\", \"name\":\"%s\", \"email\":\"%s\", \"phonenumber\":\"%s\" }",
                                 students.get((int) (Math.random() * (upper - lower)) + lower).getField0(),
-                                students.get((int) (Math.random() * (upper - lower)) + lower).getField1(),
-                                students.get((int) (Math.random() * (upper - lower)) + lower).getField2(),
-                                students.get((int) (Math.random() * (upper - lower)) + lower).getField3(),
-                                students.get((int) (Math.random() * (upper - lower)) + lower).getField4()));
+                                surname, name,
+                                email,
+                                phonenumber));
                 
             }
 //            System.out.println(bs.toString());
             given()
                     .body("[\n" + bs.toString() + "\n]")
                     .contentType(ContentType.JSON)
-                    .put("http://localhost:8080/student/")
+                    .put("https://studentcatalog.cfapps.io/api/student")
                     .then()
                     .statusCode(201);
         }
 
+    }
+
+    private String createEmail(String surname, String name, Student get) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(name.replace(" ", ".").toLowerCase())
+                .append(".")
+                .append(surname.replace(" ", ".").toLowerCase())
+                .append("@")
+                .append(get.getField4().replace(" ", "-").toLowerCase())
+                .append(".")
+                .append(get.getField3().substring(0, 3).toLowerCase())
+                ;
+                
+                return sb.toString();
+    }
+
+    private String createPhoneNumber(Student get) {
+                int num1, num2, num3; //3 numbers in area code
+        int set2, set3; //sequence 2 and 3 of the phone number
+        
+        Random generator = new Random();
+        
+        //Area code number; Will not print 8 or 9
+        num1 = generator.nextInt(7) + 1; //add 1 so there is no 0 to begin  
+        num2 = generator.nextInt(8); //randomize to 8 becuase 0 counts as a number in the generator
+        num3 = generator.nextInt(8);
+        
+        // Sequence two of phone number
+        // the plus 100 is so there will always be a 3 digit number
+        // randomize to 643 because 0 starts the first placement so if i randomized up to 642 it would only go up yo 641 plus 100
+        // and i used 643 so when it adds 100 it will not succeed 742 
+        set2 = generator.nextInt(643) + 100;
+        
+        //Sequence 3 of numebr
+        // add 1000 so there will always be 4 numbers
+        //8999 so it wont succed 9999 when the 1000 is added
+        set3 = generator.nextInt(8999) + 1000;
+        
+        return "(" + num1 + "" + num2 + "" + num3 + ")" + "-" + set2 + "-" + set3;
     }
 
 }
