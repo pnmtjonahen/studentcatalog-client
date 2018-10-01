@@ -74,7 +74,7 @@ public class Main {
             given()
                     .body("[\n" + bs.toString() + "\n]")
                     .contentType(ContentType.JSON)
-                    .put("https://studentcatalog.cfapps.io/api/student")
+                    .put("http://localhost:8080/api/student")
                     .then()
                     .statusCode(201);
         }
